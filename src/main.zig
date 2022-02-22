@@ -90,7 +90,23 @@ pub fn main() anyerror!void {
     defer info.free(allocator);
 
     try stdout.print("  {s}\n", .{info.full_name});
-    try stdout.print("{s}\n\n", .{info.description});
+    {
+        var x: usize = 0;
+        while (x < info.description.len) {
+            const end = blk: {
+                if (x + 50 >= info.description.len) {
+                    break :blk info.description.len - x;
+                } else {
+                    break :blk 50;
+                }
+            };
+
+            const str = std.mem.trimLeft(u8, info.description[x .. x + end], " ");
+            try stdout.print("{s}\n", .{str});
+            x += end;
+        }
+        try stdout.writeByte('\n');
+    }
     try stdout.print("- repository: {s}\n", .{info.html_url});
     try stdout.print("- created: {s}\n", .{info.created_at[0..10]});
     // TODO: print in form "x hours ago" for below
