@@ -47,10 +47,10 @@ pub fn main() anyerror!void {
 
     const Query = struct {
         full_name: []const u8,
-        private: bool, //
-        fork: bool, //
-        archived: bool, //
-        is_template: bool, //
+        private: bool,
+        fork: bool,
+        archived: bool,
+        is_template: bool,
         description: []const u8,
         html_url: []const u8,
         language: []const u8,
@@ -58,7 +58,7 @@ pub fn main() anyerror!void {
         stargazers_count: u32,
         watchers_count: u32,
         forks_count: u32,
-        // license: struct { name: []const u8 }, //
+        license: struct { name: []const u8 },
         created_at: []const u8,
         updated_at: []const u8,
         pushed_at: []const u8,
@@ -71,6 +71,7 @@ pub fn main() anyerror!void {
             alloc.free(self.description);
             alloc.free(self.html_url);
             alloc.free(self.language);
+            alloc.free(self.license.name);
             alloc.free(self.created_at);
             alloc.free(self.updated_at);
             alloc.free(self.pushed_at);
@@ -114,6 +115,7 @@ pub fn main() anyerror!void {
         try stdout.writeByte('\n');
     }
     try stdout.print("- repository: {s}\n", .{info.html_url});
+    try stdout.print("- license: {s}\n", .{info.license.name});
     try stdout.print("- created: {s}\n", .{info.created_at[0..10]});
     // TODO: print in form "x hours ago" for below
     try stdout.print("- modified: {s} (last pushed: {s})\n", .{ info.updated_at[0..10], info.pushed_at[0..10] });
