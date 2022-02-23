@@ -1,6 +1,7 @@
 const std = @import("std");
 const json = std.json;
 const zfetch = @import("zfetch");
+const TtyColor = @import("utils.zig").TtyColor;
 
 pub fn main() anyerror!void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -92,12 +93,17 @@ pub fn main() anyerror!void {
     };
     defer info.free(allocator);
 
+    const color = TtyColor(@TypeOf(stdout)).init(stdout);
     {
+        try color.setColor(.red);
+
         try stdout.print("  {s} ", .{info.full_name});
         if (info.fork) try stdout.writeAll("🔗 ");
         if (info.archived) try stdout.writeAll("🔒 ");
         if (info.is_template) try stdout.writeAll("🗒; ");
         try stdout.writeByte('\n');
+
+        try color.setColor(.reset);
     }
     {
         var x: usize = 0;
