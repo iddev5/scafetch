@@ -89,7 +89,13 @@ pub fn main() anyerror!void {
     };
     defer info.free(allocator);
 
-    try stdout.print("  {s}\n", .{info.full_name});
+    {
+        try stdout.print("  {s} ", .{info.full_name});
+        if (info.fork) try stdout.writeAll("🔗 ");
+        if (info.archived) try stdout.writeAll("🔒 ");
+        if (info.is_template) try stdout.writeAll("🗒; ");
+        try stdout.writeByte('\n');
+    }
     {
         var x: usize = 0;
         while (x < info.description.len) {
