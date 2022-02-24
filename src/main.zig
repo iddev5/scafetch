@@ -5,25 +5,7 @@ const allocPrint = std.fmt.allocPrint;
 const zfetch = @import("zfetch");
 const utils = @import("utils.zig");
 const TtyColor = utils.TtyColor;
-const Github = @import("Github.zig");
-
-const Hosts = enum {
-    github,
-    gitlab,
-    codeberg,
-};
-
-const hosts_map = std.ComptimeStringMap(Hosts, .{
-    .{ "github.com", .github },
-    .{ "gitlab.com", .gitlab },
-    .{ "codeberg.com", .codeberg },
-    .{ "github", .github },
-    .{ "gitlab", .gitlab },
-    .{ "codeberg", .codeberg },
-    .{ "gh", .github },
-    .{ "gl", .gitlab },
-    .{ "cb", .codeberg },
-});
+const Host = @import("hosts.zig").Host;
 
 pub fn main() anyerror!void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -49,7 +31,7 @@ pub fn main() anyerror!void {
             const author_name = tokenizer.next().?;
             const project_name = tokenizer.rest();
 
-            if (hosts_map.get(host_name)) |host| break :blk switch (host) {
+            if (Host.match(host_name)) |host| break :blk switch (host) {
                 .github => try allocPrint(allocator, "https://api.github.com/repos/{s}/{s}", .{ author_name, project_name }),
                 .gitlab => try allocPrint(allocator, "https://gitlab.com/api/v4/projects/{s}%2F{s}", .{ author_name, project_name }),
                 .codeberg => try allocPrint(allocator, "https://codeberg.org/api/v1/repos/{s}/{s}", .{ author_name, project_name }),
@@ -64,8 +46,7 @@ pub fn main() anyerror!void {
     };
     defer allocator.free(url);
 
-    var github = Github.init(allocator, url);
-    var info = try github.request();
+    var info = try Host.request(.github, allocator, url);
     defer info.free(allocator);
 
     const color = TtyColor(@TypeOf(stdout)).init(stdout);
