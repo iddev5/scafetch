@@ -5,6 +5,7 @@ const allocPrint = std.fmt.allocPrint;
 const zfetch = @import("zfetch");
 const utils = @import("utils.zig");
 const TtyColor = utils.TtyColor;
+const Github = @import("Github.zig");
 
 const Hosts = enum {
     github,
@@ -63,63 +64,19 @@ pub fn main() anyerror!void {
     };
     defer allocator.free(url);
 
-    const source = try utils.requestGet(allocator, url);
-    defer allocator.free(source);
-
-    const Query = struct {
-        full_name: []const u8,
-        private: bool,
-        fork: bool,
-        archived: bool,
-        is_template: bool,
-        description: []const u8,
-        html_url: []const u8,
-        language: []const u8,
-        size: u32,
-        stargazers_count: u32,
-        watchers_count: u32,
-        forks_count: u32,
-        license: struct { name: []const u8 },
-        created_at: []const u8,
-        updated_at: []const u8,
-        default_branch: []const u8,
-        // branches_url: [][]const u8
-        // languages_url: [][]const u8
-        // contributors_url: [][]const u8
-
-        pub fn free(self: *@This(), alloc: std.mem.Allocator) void {
-            alloc.free(self.full_name);
-            alloc.free(self.description);
-            alloc.free(self.html_url);
-            alloc.free(self.language);
-            alloc.free(self.license.name);
-            alloc.free(self.created_at);
-            alloc.free(self.updated_at);
-            alloc.free(self.default_branch);
-        }
-    };
-
-    var info = blk: {
-        @setEvalBranchQuota(6000);
-        var tokens = json.TokenStream.init(source);
-        var info = try json.parse(Query, &tokens, .{
-            .allocator = allocator,
-            .ignore_unknown_fields = true,
-        });
-        errdefer info.free(allocator);
-        break :blk info;
-    };
+    var github = Github.init(allocator, url);
+    var info = try github.request();
     defer info.free(allocator);
 
     const color = TtyColor(@TypeOf(stdout)).init(stdout);
     {
         try color.setColor(.red);
 
-        try stdout.print("  {s} ", .{info.full_name});
-        if (info.fork) try stdout.writeAll("🔗 ");
-        if (info.private) try stdout.writeAll("🔒 ");
+        try stdout.print("  {s} ", .{info.name});
+        if (info.is_fork) try stdout.writeAll("🔗 ");
+        if (info.is_private) try stdout.writeAll("🔒 ");
         if (info.is_template) try stdout.writeAll("🗒; ");
-        if (info.archived) try stdout.writeAll("📦 ");
+        if (info.is_archived) try stdout.writeAll("📦 ");
         try stdout.writeByte('\n');
 
         try color.setColor(.reset);
@@ -141,17 +98,17 @@ pub fn main() anyerror!void {
         }
         try stdout.writeByte('\n');
     }
-    try stdout.print("- repository: {s}\n", .{info.html_url});
-    try stdout.print("- license: {s}\n", .{info.license.name});
-    try stdout.print("- default branch: {s}\n", .{info.default_branch});
-    try stdout.print("- created: {s}\n", .{info.created_at[0..10]});
+    try stdout.print("- repository: {s}\n", .{info.repository});
+    try stdout.print("- license: {s}\n", .{info.license});
+    try stdout.print("- default branch: {s}\n", .{info.branch});
+    try stdout.print("- created: {s}\n", .{info.created[0..10]});
     // TODO: print in form "x hours ago" for below
-    try stdout.print("- modified: {s}\n", .{info.updated_at[0..10]});
+    try stdout.print("- modified: {s}\n", .{info.modified[0..10]});
     try stdout.print("- language: {s}\n", .{info.language});
     try stdout.print("- size: {} KB\n", .{info.size});
-    try stdout.print("- stars: {}\n", .{info.stargazers_count});
-    try stdout.print("- watches: {}\n", .{info.watchers_count});
-    try stdout.print("- forks: {}\n", .{info.forks_count});
+    try stdout.print("- stars: {}\n", .{info.stars});
+    try stdout.print("- watches: {}\n", .{info.watches});
+    try stdout.print("- forks: {}\n", .{info.forks});
 
     std.log.info("All your get requests are belong to us.", .{});
 }
