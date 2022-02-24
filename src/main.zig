@@ -3,8 +3,6 @@ const json = std.json;
 const mem = std.mem;
 const allocPrint = std.fmt.allocPrint;
 const zfetch = @import("zfetch");
-const utils = @import("utils.zig");
-const TtyColor = utils.TtyColor;
 const Host = @import("hosts.zig").Host;
 
 pub fn main() anyerror!void {
