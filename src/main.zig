@@ -49,47 +49,7 @@ pub fn main() anyerror!void {
     var info = try Host.request(.github, allocator, url);
     defer info.free(allocator);
 
-    const color = TtyColor(@TypeOf(stdout)).init(stdout);
-    {
-        try color.setColor(.red);
-
-        try stdout.print("  {s} ", .{info.name});
-        if (info.is_fork) try stdout.writeAll("🔗 ");
-        if (info.is_private) try stdout.writeAll("🔒 ");
-        if (info.is_template) try stdout.writeAll("🗒; ");
-        if (info.is_archived) try stdout.writeAll("📦 ");
-        try stdout.writeByte('\n');
-
-        try color.setColor(.reset);
-    }
-    {
-        var x: usize = 0;
-        while (x < info.description.len) {
-            const end = blk: {
-                if (x + 50 >= info.description.len) {
-                    break :blk info.description.len - x;
-                } else {
-                    break :blk 50;
-                }
-            };
-
-            const str = std.mem.trimLeft(u8, info.description[x .. x + end], " ");
-            try stdout.print("{s}\n", .{str});
-            x += end;
-        }
-        try stdout.writeByte('\n');
-    }
-    try stdout.print("- repository: {s}\n", .{info.repository});
-    try stdout.print("- license: {s}\n", .{info.license});
-    try stdout.print("- default branch: {s}\n", .{info.branch});
-    try stdout.print("- created: {s}\n", .{info.created[0..10]});
-    // TODO: print in form "x hours ago" for below
-    try stdout.print("- modified: {s}\n", .{info.modified[0..10]});
-    try stdout.print("- language: {s}\n", .{info.language});
-    try stdout.print("- size: {} KB\n", .{info.size});
-    try stdout.print("- stars: {}\n", .{info.stars});
-    try stdout.print("- watches: {}\n", .{info.watches});
-    try stdout.print("- forks: {}\n", .{info.forks});
+    try info.print(stdout);
 
     std.log.info("All your get requests are belong to us.", .{});
 }

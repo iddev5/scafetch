@@ -2,8 +2,7 @@ const std = @import("std");
 const json = std.json;
 const Allocator = std.mem.Allocator;
 const utils = @import("utils.zig");
-const common = @import("common.zig");
-const Info = common.Info;
+const Info = @import("Info.zig");
 
 pub const Host = enum {
     github,
