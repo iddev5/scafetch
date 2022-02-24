@@ -39,7 +39,6 @@ pub fn main() anyerror!void {
         license: struct { name: []const u8 },
         created_at: []const u8,
         updated_at: []const u8,
-        pushed_at: []const u8,
         default_branch: []const u8,
         // branches_url: [][]const u8
         // languages_url: [][]const u8
@@ -53,7 +52,6 @@ pub fn main() anyerror!void {
             alloc.free(self.license.name);
             alloc.free(self.created_at);
             alloc.free(self.updated_at);
-            alloc.free(self.pushed_at);
             alloc.free(self.default_branch);
         }
     };
@@ -105,7 +103,7 @@ pub fn main() anyerror!void {
     try stdout.print("- default branch: {s}\n", .{info.default_branch});
     try stdout.print("- created: {s}\n", .{info.created_at[0..10]});
     // TODO: print in form "x hours ago" for below
-    try stdout.print("- modified: {s} (last pushed: {s})\n", .{ info.updated_at[0..10], info.pushed_at[0..10] });
+    try stdout.print("- modified: {s}\n", .{info.updated_at[0..10]});
     try stdout.print("- language: {s}\n", .{info.language});
     try stdout.print("- size: {} KB\n", .{info.size});
     try stdout.print("- stars: {}\n", .{info.stargazers_count});
