@@ -1,4 +1,38 @@
+const std = @import("std");
+const Allocator = std.mem.Allocator;
 const builtin = @import("builtin");
+const zfetch = @import("zfetch");
+
+pub fn requestGet(allocator: Allocator, url: []const u8) ![]const u8 {
+    var headers = zfetch.Headers.init(allocator);
+    defer headers.deinit();
+
+    try headers.appendValue("Accept", "application/json");
+
+    var req = try zfetch.Request.init(allocator, url, null);
+    defer req.deinit();
+
+    try req.do(.GET, headers, null);
+    if (req.status.code != 200) {
+        std.log.err("request return status code: {}: {s}\n", .{ req.status.code, req.status.reason });
+        std.process.exit(1);
+    }
+
+    const reader = req.reader();
+
+    var buf: [1024]u8 = undefined;
+    var source = std.ArrayList(u8).init(allocator);
+    defer source.deinit();
+
+    while (true) {
+        const read = try reader.read(&buf);
+        if (read == 0) break;
+
+        try source.appendSlice(buf[0..read]);
+    }
+
+    return source.toOwnedSlice();
+}
 
 pub fn TtyColor(comptime WriterType: type) type {
     return struct {

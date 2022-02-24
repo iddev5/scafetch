@@ -1,12 +1,15 @@
 const std = @import("std");
 const json = std.json;
 const zfetch = @import("zfetch");
-const TtyColor = @import("utils.zig").TtyColor;
+const utils = @import("utils.zig");
+const TtyColor = utils.TtyColor;
 
 pub fn main() anyerror!void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
     defer _ = gpa.deinit();
+
+    const stdout = std.io.getStdOut().writer();
 
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
@@ -14,37 +17,11 @@ pub fn main() anyerror!void {
     try zfetch.init();
     defer zfetch.deinit();
 
-    var headers = zfetch.Headers.init(allocator);
-    defer headers.deinit();
-
-    try headers.appendValue("Accept", "application/json");
-
     const url = try std.fmt.allocPrint(allocator, "https://api.github.com/repos/{s}", .{args[1]});
     defer allocator.free(url);
 
-    var req = try zfetch.Request.init(allocator, url, null);
-    defer req.deinit();
-
-    try req.do(.GET, headers, null);
-
-    const stdout = std.io.getStdOut().writer();
-    const reader = req.reader();
-
-    if (req.status.code != 200) {
-        std.log.err("request return status code: {}: {s}\n", .{ req.status.code, req.status.reason });
-        std.process.exit(1);
-    }
-
-    var buf: [1024]u8 = undefined;
-    var source = std.ArrayList(u8).init(allocator);
-    defer source.deinit();
-
-    while (true) {
-        const read = try reader.read(&buf);
-        if (read == 0) break;
-
-        try source.appendSlice(buf[0..read]);
-    }
+    const source = try utils.requestGet(allocator, url);
+    defer allocator.free(source);
 
     const Query = struct {
         full_name: []const u8,
@@ -83,7 +60,7 @@ pub fn main() anyerror!void {
 
     var info = blk: {
         @setEvalBranchQuota(6000);
-        var tokens = json.TokenStream.init(source.items);
+        var tokens = json.TokenStream.init(source);
         var info = try json.parse(Query, &tokens, .{
             .allocator = allocator,
             .ignore_unknown_fields = true,
