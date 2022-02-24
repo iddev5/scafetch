@@ -76,8 +76,9 @@ pub fn main() anyerror!void {
 
         try stdout.print("  {s} ", .{info.full_name});
         if (info.fork) try stdout.writeAll("🔗 ");
-        if (info.archived) try stdout.writeAll("🔒 ");
+        if (info.private) try stdout.writeAll("🔒 ");
         if (info.is_template) try stdout.writeAll("🗒; ");
+        if (info.archived) try stdout.writeAll("📦 ");
         try stdout.writeByte('\n');
 
         try color.setColor(.reset);
