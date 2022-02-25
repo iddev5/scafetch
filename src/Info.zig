@@ -65,15 +65,33 @@ pub fn print(info: *Info, writer: anytype) !void {
         try writer.writeByte('\n');
     }
 
-    try writer.print("- repository: {s}\n", .{info.repository});
-    try writer.print("- license: {s}\n", .{info.license});
-    try writer.print("- default branch: {s}\n", .{info.branch});
-    try writer.print("- created: {s}\n", .{info.created[0..10]});
-    // TODO: print in form "x hours ago" for below
-    try writer.print("- modified: {s}\n", .{info.modified[0..10]});
-    try writer.print("- language: {s}\n", .{info.language});
-    try writer.print("- size: {} KB\n", .{info.size});
-    try writer.print("- stars: {}\n", .{info.stars});
-    try writer.print("- watches: {}\n", .{info.watches});
-    try writer.print("- forks: {}\n", .{info.forks});
+    const fields = .{
+        "repository",
+        "license",
+        "branch",
+        "created",
+        "modified",
+        "language",
+        "size",
+        "stars",
+        "watches",
+        "forks",
+    };
+    inline for (fields) |f| {
+        const info_fields = std.meta.fields(Info);
+        const field_id: usize = std.meta.fieldIndex(Info, f).?;
+        const field = info_fields[field_id];
+
+        try writer.writeByte('-');
+
+        try color.setColor(.red);
+        try writer.print(" {s}", .{field.name});
+        try color.setColor(.reset);
+
+        if (field.field_type == []const u8) {
+            try writer.print(": {s}\n", .{@field(info, field.name)});
+        } else {
+            try writer.print(": {}\n", .{@field(info, field.name)});
+        }
+    }
 }
