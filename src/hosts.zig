@@ -104,8 +104,8 @@ const Github = struct {
             .watches = query.watchers_count,
             .forks = query.forks_count,
             .license = try allocator.dupe(u8, query.license.name),
-            .created = try allocator.dupe(u8, query.created_at),
-            .modified = try allocator.dupe(u8, query.updated_at),
+            .created = try allocator.dupe(u8, query.created_at[0..10]),
+            .modified = try allocator.dupe(u8, query.updated_at[0..10]),
             .branch = try allocator.dupe(u8, query.default_branch),
         };
     }
@@ -169,8 +169,8 @@ const Gitea = struct {
             .watches = query.watchers_count,
             .forks = query.forks_count,
             .license = try allocator.dupe(u8, ""),
-            .created = try allocator.dupe(u8, query.created_at),
-            .modified = try allocator.dupe(u8, query.updated_at),
+            .created = try allocator.dupe(u8, query.created_at[0..10]),
+            .modified = try allocator.dupe(u8, query.updated_at[0..10]),
             .branch = try allocator.dupe(u8, query.default_branch),
         };
     }
@@ -228,8 +228,8 @@ const Gitlab = struct {
             .watches = 0,
             .forks = query.forks_count,
             .license = try allocator.dupe(u8, query.license.nickname),
-            .created = try allocator.dupe(u8, query.created_at),
-            .modified = try allocator.dupe(u8, query.last_activity_at),
+            .created = try allocator.dupe(u8, query.created_at[0..10]),
+            .modified = try allocator.dupe(u8, query.last_activity_at[0..10]),
             .branch = try allocator.dupe(u8, query.default_branch),
         };
     }
