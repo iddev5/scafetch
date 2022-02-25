@@ -19,6 +19,7 @@ pub fn main() anyerror!void {
     defer zfetch.deinit();
 
     const project = args[1];
+    var host_tag: Host = .github;
     const url = if (mem.startsWith(u8, project, "http:") or mem.startsWith(u8, project, "https:")) blk: {
         break :blk try allocator.dupe(u8, project);
     } else switch (std.mem.count(u8, project, "/")) {
@@ -29,10 +30,13 @@ pub fn main() anyerror!void {
             const author_name = tokenizer.next().?;
             const project_name = tokenizer.rest();
 
-            if (Host.match(host_name)) |host| break :blk switch (host) {
-                .github => try allocPrint(allocator, "https://api.github.com/repos/{s}/{s}", .{ author_name, project_name }),
-                .gitlab => try allocPrint(allocator, "https://gitlab.com/api/v4/projects/{s}%2F{s}", .{ author_name, project_name }),
-                .codeberg => try allocPrint(allocator, "https://codeberg.org/api/v1/repos/{s}/{s}", .{ author_name, project_name }),
+            if (Host.match(host_name)) |host| {
+                host_tag = host;
+                break :blk switch (host) {
+                    .github => try allocPrint(allocator, "https://api.github.com/repos/{s}/{s}", .{ author_name, project_name }),
+                    .gitlab => try allocPrint(allocator, "https://gitlab.com/api/v4/projects/{s}%2F{s}", .{ author_name, project_name }),
+                    .codeberg => try allocPrint(allocator, "https://codeberg.org/api/v1/repos/{s}/{s}", .{ author_name, project_name }),
+                };
             } else {
                 break :blk try allocPrint(allocator, "https://{s}", .{project});
             }
@@ -44,7 +48,7 @@ pub fn main() anyerror!void {
     };
     defer allocator.free(url);
 
-    var info = try Host.request(.github, allocator, url);
+    var info = try Host.request(host_tag, allocator, url);
     defer info.free(allocator);
 
     try info.print(stdout);
