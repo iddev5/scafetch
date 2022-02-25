@@ -89,16 +89,29 @@ pub fn print(info: *Info, writer: anytype) !void {
         const field_id: usize = std.meta.fieldIndex(Info, f).?;
         const field = info_fields[field_id];
 
-        try writer.writeByte('-');
-
-        try color.setColor(choice);
-        try writer.print(" {s}", .{field.name});
-        try color.reset();
-
+        const data = @field(info, field.name);
         if (field.field_type == []const u8) {
-            try writer.print(": {s}\n", .{@field(info, field.name)});
+            if (!std.mem.eql(u8, data, "")) {
+                try writer.writeByte('-');
+
+                try color.setColor(choice);
+                try writer.print(" {s}", .{field.name});
+                try color.reset();
+
+                try writer.print(": {s}\n", .{data});
+            }
         } else {
-            try writer.print(": {}\n", .{@field(info, field.name)});
+            if (data != 0) {
+                try writer.writeByte('-');
+
+                try color.setColor(choice);
+                try writer.print(" {s}", .{field.name});
+                try color.reset();
+
+                try writer.print(": {}\n", .{data});
+            }
         }
     }
+
+    try writer.writeByte('\n');
 }
