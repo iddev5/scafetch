@@ -5,6 +5,11 @@ const zfetch = @import("zfetch");
 const Host = @import("hosts.zig").Host;
 const AyArgparse = @import("ay-arg");
 
+pub fn printVersion(writer: anytype) !void {
+    try writer.writeAll("scafetch v0.1\n");
+    std.process.exit(0);
+}
+
 pub fn main() anyerror!void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
@@ -17,10 +22,14 @@ pub fn main() anyerror!void {
 
     const params = &[_]AyArgparse.ParamDesc{
         .{ .long = "host", .short = "h", .need_value = true },
+        .{ .long = "version", .short = "v" },
     };
     var ap = AyArgparse.init(allocator, params[0..]);
     defer ap.deinit();
     try ap.parse(args[1..]);
+
+    if (ap.arguments.get("version")) |_|
+        try printVersion(stdout);
 
     try zfetch.init();
     defer zfetch.deinit();
