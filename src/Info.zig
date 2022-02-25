@@ -50,10 +50,11 @@ pub fn print(info: *Info, writer: anytype) !void {
         var x: usize = 0;
         while (x < info.description.len) {
             const end = blk: {
-                if (x + 50 >= info.description.len) {
+                const amount = 60;
+                if (x + amount >= info.description.len) {
                     break :blk info.description.len - x;
                 } else {
-                    break :blk 50;
+                    break :blk amount;
                 }
             };
 
@@ -63,6 +64,7 @@ pub fn print(info: *Info, writer: anytype) !void {
         }
         try writer.writeByte('\n');
     }
+
     try writer.print("- repository: {s}\n", .{info.repository});
     try writer.print("- license: {s}\n", .{info.license});
     try writer.print("- default branch: {s}\n", .{info.branch});
