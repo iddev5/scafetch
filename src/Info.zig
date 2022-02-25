@@ -1,7 +1,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const utils = @import("utils.zig");
-const TtyColor = utils.TtyColor;
+const ConsoleStyle = utils.ConsoleStyle;
 
 name: []const u8,
 is_private: bool,
@@ -36,7 +36,7 @@ pub fn print(info: *Info, writer: anytype) !void {
     const rand_engine = std.rand.DefaultPrng.init(@intCast(u64, std.time.milliTimestamp())).random();
     const choice = rand_engine.enumValue(utils.Color);
 
-    const color = TtyColor(@TypeOf(writer)).init(writer);
+    const color = ConsoleStyle(@TypeOf(writer)).init(writer);
     {
         const id = std.mem.indexOf(u8, info.name, "/").?;
         try color.setColor(choice);

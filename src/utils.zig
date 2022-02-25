@@ -42,7 +42,7 @@ pub const Color = enum {
     purple,
 };
 
-pub fn TtyColor(comptime WriterType: type) type {
+pub fn ConsoleStyle(comptime WriterType: type) type {
     return struct {
         writer: WriterType,
 
