@@ -33,9 +33,12 @@ pub fn free(self: *Info, allocator: Allocator) void {
 }
 
 pub fn print(info: *Info, writer: anytype) !void {
+    const rand_engine = std.rand.DefaultPrng.init(@intCast(u64, std.time.milliTimestamp())).random();
+    const choice = rand_engine.enumValue(utils.Color);
+
     const color = TtyColor(@TypeOf(writer)).init(writer);
     {
-        try color.setColor(.red);
+        try color.setColor(choice);
 
         try writer.print("  {s} ", .{info.name});
         if (info.is_fork) try writer.writeAll("🔗 ");
@@ -44,7 +47,7 @@ pub fn print(info: *Info, writer: anytype) !void {
         if (info.is_archived) try writer.writeAll("📦 ");
         try writer.writeByte('\n');
 
-        try color.setColor(.reset);
+        try color.reset();
     }
     {
         var x: usize = 0;
@@ -84,9 +87,9 @@ pub fn print(info: *Info, writer: anytype) !void {
 
         try writer.writeByte('-');
 
-        try color.setColor(.red);
+        try color.setColor(choice);
         try writer.print(" {s}", .{field.name});
-        try color.setColor(.reset);
+        try color.reset();
 
         if (field.field_type == []const u8) {
             try writer.print(": {s}\n", .{@field(info, field.name)});
