@@ -30,7 +30,7 @@ pub const Host = enum {
     pub fn getUrl(host: Host, allocator: Allocator, author: []const u8, project: []const u8) ![]const u8 {
         return switch (host) {
             .default, .github => try allocPrint(allocator, "https://api.github.com/repos/{s}/{s}", .{ author, project }),
-            .gitlab => try allocPrint(allocator, "https://gitlab.com/api/v4/projects/{s}%2F{s}", .{ author, project }),
+            .gitlab => try allocPrint(allocator, "https://gitlab.com/api/v4/projects/{s}%2F{s}?license=1", .{ author, project }),
             .codeberg => try allocPrint(allocator, "https://codeberg.org/api/v1/repos/{s}/{s}", .{ author, project }),
         };
     }
@@ -39,10 +39,7 @@ pub const Host = enum {
         return switch (host) {
             .github, .default => try Github.request(allocator, url),
             .codeberg => try Gitea.request(allocator, url),
-            else => {
-                std.log.err("host unimplemented", .{});
-                std.process.exit(1);
-            },
+            .gitlab => try Gitlab.request(allocator, url),
         };
     }
 };
@@ -174,6 +171,65 @@ const Gitea = struct {
             .license = try allocator.dupe(u8, ""),
             .created = try allocator.dupe(u8, query.created_at),
             .modified = try allocator.dupe(u8, query.updated_at),
+            .branch = try allocator.dupe(u8, query.default_branch),
+        };
+    }
+};
+
+const Gitlab = struct {
+    const Query = struct {
+        path_with_namespace: []const u8,
+        description: []const u8,
+        license: struct { nickname: []const u8 },
+        web_url: []const u8,
+        star_count: u32,
+        forks_count: u32,
+        created_at: []const u8,
+        last_activity_at: []const u8,
+        default_branch: []const u8,
+
+        pub fn free(self: *@This(), allocator: Allocator) void {
+            allocator.free(self.path_with_namespace);
+            allocator.free(self.description);
+            allocator.free(self.web_url);
+            allocator.free(self.license.nickname);
+            allocator.free(self.created_at);
+            allocator.free(self.last_activity_at);
+            allocator.free(self.default_branch);
+        }
+    };
+
+    pub fn request(allocator: Allocator, url: []const u8) !Info {
+        const source = try utils.requestGet(allocator, url);
+        defer allocator.free(source);
+        var query = blk: {
+            @setEvalBranchQuota(6000);
+            var tokens = json.TokenStream.init(source);
+            var query = try json.parse(Query, &tokens, .{
+                .allocator = allocator,
+                .ignore_unknown_fields = true,
+            });
+            errdefer query.free(allocator);
+            break :blk query;
+        };
+        defer query.free(allocator);
+
+        return Info{
+            .name = try allocator.dupe(u8, query.path_with_namespace),
+            .is_private = false,
+            .is_fork = false,
+            .is_archived = false,
+            .is_template = false,
+            .description = try allocator.dupe(u8, query.description),
+            .repository = try allocator.dupe(u8, query.web_url),
+            .language = try allocator.dupe(u8, ""),
+            .size = 0,
+            .stars = query.star_count,
+            .watches = 0,
+            .forks = query.forks_count,
+            .license = try allocator.dupe(u8, query.license.nickname),
+            .created = try allocator.dupe(u8, query.created_at),
+            .modified = try allocator.dupe(u8, query.last_activity_at),
             .branch = try allocator.dupe(u8, query.default_branch),
         };
     }
