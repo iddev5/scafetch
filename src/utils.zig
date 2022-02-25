@@ -34,20 +34,17 @@ pub fn requestGet(allocator: Allocator, url: []const u8) ![]const u8 {
     return source.toOwnedSlice();
 }
 
+pub const Color = enum {
+    red,
+    green,
+    yellow,
+    blue,
+    purple,
+};
+
 pub fn TtyColor(comptime WriterType: type) type {
     return struct {
         writer: WriterType,
-
-        pub const Color = enum {
-            reset,
-            black,
-            red,
-            green,
-            yellow,
-            blue,
-            purple,
-            white,
-        };
 
         const Self = @This();
 
@@ -72,16 +69,17 @@ pub fn TtyColor(comptime WriterType: type) type {
             try self.setColorCode("1");
         }
 
+        pub fn reset(self: *const Self) !void {
+            try self.setColorCode("0");
+        }
+
         fn getCode(_: *const Self, color: Color) []const u8 {
             return switch (color) {
-                .reset => "0",
-                .black => "30;1",
                 .red => "31;1",
                 .green => "32;1",
                 .yellow => "33;1",
                 .blue => "34;1",
                 .purple => "35;1",
-                .white => "37;1",
             };
         }
     };
