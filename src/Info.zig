@@ -50,7 +50,7 @@ pub fn print(info: *Info, writer: anytype) !void {
         try color.reset();
 
         try writer.writeAll("  ");
-        try writer.writeByteNTimes('-', info.name.len);
+        try writer.writeByteNTimes('~', info.name.len);
         try writer.writeByte('\n');
     }
     {
