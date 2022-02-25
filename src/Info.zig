@@ -48,6 +48,10 @@ pub fn print(info: *Info, writer: anytype) !void {
         try writer.writeByte('\n');
 
         try color.reset();
+
+        try writer.writeAll("  ");
+        try writer.writeByteNTimes('-', info.name.len);
+        try writer.writeByte('\n');
     }
     {
         var x: usize = 0;
