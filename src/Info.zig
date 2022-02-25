@@ -38,9 +38,14 @@ pub fn print(info: *Info, writer: anytype) !void {
 
     const color = TtyColor(@TypeOf(writer)).init(writer);
     {
+        const id = std.mem.indexOf(u8, info.name, "/").?;
         try color.setColor(choice);
+        try writer.print("  {s}", .{info.name[0..id]});
+        try color.reset();
+        try writer.writeByte('/');
+        try color.setColor(choice);
+        try writer.print("{s} ", .{info.name[id + 1 ..]});
 
-        try writer.print("  {s} ", .{info.name});
         if (info.is_fork) try writer.writeAll("🔗 ");
         if (info.is_private) try writer.writeAll("🔒 ");
         if (info.is_template) try writer.writeAll("🗒; ");
