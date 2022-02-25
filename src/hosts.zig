@@ -1,6 +1,7 @@
 const std = @import("std");
 const json = std.json;
 const Allocator = std.mem.Allocator;
+const allocPrint = std.fmt.allocPrint;
 const utils = @import("utils.zig");
 const Info = @import("Info.zig");
 
@@ -8,6 +9,7 @@ pub const Host = enum {
     github,
     gitlab,
     codeberg,
+    default,
 
     const hosts_map = std.ComptimeStringMap(Host, .{
         .{ "github.com", .github },
@@ -25,9 +27,17 @@ pub const Host = enum {
         return Host.hosts_map.get(name);
     }
 
+    pub fn getUrl(host: Host, allocator: Allocator, author: []const u8, project: []const u8) ![]const u8 {
+        return switch (host) {
+            .default, .github => try allocPrint(allocator, "https://api.github.com/repos/{s}/{s}", .{ author, project }),
+            .gitlab => try allocPrint(allocator, "https://gitlab.com/api/v4/projects/{s}%2F{s}", .{ author, project }),
+            .codeberg => try allocPrint(allocator, "https://codeberg.org/api/v1/repos/{s}/{s}", .{ author, project }),
+        };
+    }
+
     pub fn request(host: Host, allocator: Allocator, url: []const u8) !Info {
         return switch (host) {
-            .github => try Github.request(allocator, url),
+            .github, .default => try Github.request(allocator, url),
             .codeberg => try Gitea.request(allocator, url),
             else => {
                 std.log.err("host unimplemented", .{});

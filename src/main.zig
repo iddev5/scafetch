@@ -1,9 +1,9 @@
 const std = @import("std");
 const json = std.json;
 const mem = std.mem;
-const allocPrint = std.fmt.allocPrint;
 const zfetch = @import("zfetch");
 const Host = @import("hosts.zig").Host;
+const AyArgparse = @import("ay-arg");
 
 pub fn main() anyerror!void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -15,36 +15,55 @@ pub fn main() anyerror!void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
+    const params = &[_]AyArgparse.ParamDesc{
+        .{ .long = "host", .short = "h", .need_value = true },
+    };
+    var ap = AyArgparse.init(allocator, params[0..]);
+    defer ap.deinit();
+    try ap.parse(args[1..]);
+
     try zfetch.init();
     defer zfetch.deinit();
 
-    const project = args[1];
-    var host_tag: Host = .github;
+    const project = ap.positionals.items[0];
+    var host_tag: Host = if (ap.arguments.get("host")) |h| std.meta.stringToEnum(Host, h) orelse {
+        std.log.err("unknown host name: {s}\n", .{h});
+        std.process.exit(1);
+    } else .default;
+
     const url = if (mem.startsWith(u8, project, "http:") or mem.startsWith(u8, project, "https:")) blk: {
         break :blk try allocator.dupe(u8, project);
-    } else switch (std.mem.count(u8, project, "/")) {
-        1 => try allocPrint(allocator, "https://api.github.com/repos/{s}", .{project}),
-        2 => blk: {
-            var tokenizer = std.mem.tokenize(u8, project, "/");
-            const host_name = tokenizer.next().?;
-            const author_name = tokenizer.next().?;
-            const project_name = tokenizer.rest();
+    } else blk: {
+        var tokenizer = std.mem.tokenize(u8, project, "/");
+        var author_name: []const u8 = undefined;
+        var project_name: []const u8 = undefined;
 
-            if (Host.match(host_name)) |host| {
-                host_tag = host;
-                break :blk switch (host) {
-                    .github => try allocPrint(allocator, "https://api.github.com/repos/{s}/{s}", .{ author_name, project_name }),
-                    .gitlab => try allocPrint(allocator, "https://gitlab.com/api/v4/projects/{s}%2F{s}", .{ author_name, project_name }),
-                    .codeberg => try allocPrint(allocator, "https://codeberg.org/api/v1/repos/{s}/{s}", .{ author_name, project_name }),
-                };
-            } else {
-                break :blk try allocPrint(allocator, "https://{s}", .{project});
-            }
-        },
-        else => {
-            std.log.err("malformed url/project name", .{});
-            std.process.exit(1);
-        },
+        switch (std.mem.count(u8, project, "/")) {
+            1 => {
+                author_name = tokenizer.next().?;
+                project_name = tokenizer.rest();
+            },
+            2 => {
+                const host_name = tokenizer.next().?;
+                author_name = tokenizer.next().?;
+                project_name = tokenizer.rest();
+
+                if (Host.match(host_name)) |host| {
+                    if (host_tag != .default and host != host_tag) {
+                        std.log.err("mismatched host name in argument and in url", .{});
+                        std.process.exit(1);
+                    }
+
+                    host_tag = host;
+                }
+            },
+            else => {
+                std.log.err("malformed url/project name", .{});
+                std.process.exit(1);
+            },
+        }
+
+        break :blk try Host.getUrl(host_tag, allocator, author_name, project_name);
     };
     defer allocator.free(url);
 
