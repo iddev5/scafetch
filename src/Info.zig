@@ -32,11 +32,12 @@ pub fn free(self: *Info, allocator: Allocator) void {
     allocator.free(self.branch);
 }
 
-pub fn print(info: *Info, writer: anytype) !void {
+pub fn print(info: *Info, file: std.fs.File) !void {
     const rand_engine = std.rand.DefaultPrng.init(@intCast(u64, std.time.milliTimestamp())).random();
     const choice = rand_engine.enumValue(utils.Color);
 
-    const color = ConsoleStyle(@TypeOf(writer)).init(writer);
+    const writer = file.writer();
+    const color = ConsoleStyle.init(file);
     {
         const id = std.mem.indexOf(u8, info.name, "/").?;
         try color.setColor(choice);

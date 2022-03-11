@@ -15,6 +15,7 @@ pub fn main() anyerror!void {
     const allocator = gpa.allocator();
     defer _ = gpa.deinit();
 
+    const stdout_file = std.io.getStdOut();
     const stdout = std.io.getStdOut().writer();
 
     const args = try std.process.argsAlloc(allocator);
@@ -79,7 +80,7 @@ pub fn main() anyerror!void {
     var info = try Host.request(host_tag, allocator, url);
     defer info.free(allocator);
 
-    try info.print(stdout);
+    try info.print(stdout_file);
 
     std.log.info("All your get requests are belong to us.", .{});
 }

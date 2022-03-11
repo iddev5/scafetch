@@ -42,45 +42,42 @@ pub const Color = enum {
     purple,
 };
 
-pub fn ConsoleStyle(comptime WriterType: type) type {
-    return struct {
-        writer: WriterType,
+pub const ConsoleStyle = struct {
+    f: std.fs.File,
 
-        const Self = @This();
+    const Self = @This();
+    pub fn init(f: std.fs.File) Self {
+        return .{
+            .f = f,
+        };
+    }
 
-        pub fn init(writer: WriterType) Self {
-            return .{
-                .writer = writer,
-            };
+    pub fn setColor(self: *const Self, color: Color) !void {
+        const code = self.getCode(color);
+        try self.setColorCode(code);
+    }
+
+    pub fn setColorCode(self: *const Self, code: []const u8) !void {
+        if (builtin.os.tag == .window) {} else {
+            try self.f.writer().print("\x1b[{s}m", .{code});
         }
+    }
 
-        pub fn setColor(self: *const Self, color: Color) !void {
-            const code = self.getCode(color);
-            try self.setColorCode(code);
-        }
+    pub fn setBold(self: *const Self) !void {
+        try self.setColorCode("1");
+    }
 
-        pub fn setColorCode(self: *const Self, code: []const u8) !void {
-            if (builtin.os.tag == .windows) {} else {
-                try self.writer.print("\x1b[{s}m", .{code});
-            }
-        }
+    pub fn reset(self: *const Self) !void {
+        try self.setColorCode("0");
+    }
 
-        pub fn setBold(self: *const Self) !void {
-            try self.setColorCode("1");
-        }
-
-        pub fn reset(self: *const Self) !void {
-            try self.setColorCode("0");
-        }
-
-        fn getCode(_: *const Self, color: Color) []const u8 {
-            return switch (color) {
-                .red => "31;1",
-                .green => "32;1",
-                .yellow => "33;1",
-                .blue => "34;1",
-                .purple => "35;1",
-            };
-        }
-    };
-}
+    fn getCode(_: *const Self, color: Color) []const u8 {
+        return switch (color) {
+            .red => "31;1",
+            .green => "32;1",
+            .yellow => "33;1",
+            .blue => "34;1",
+            .purple => "35;1",
+        };
+    }
+};
