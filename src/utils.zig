@@ -86,7 +86,14 @@ pub const ConsoleStyle = struct {
 
             try self.setAttrWin(col);
         } else {
-            const code = self.getCodeAscii(color);
+            const code = switch (color) {
+                .red => "31;1",
+                .green => "32;1",
+                .yellow => "33;1",
+                .blue => "34;1",
+                .purple => "35;1",
+            };
+
             try self.writeCodeAscii(code);
         }
     }
@@ -113,15 +120,5 @@ pub const ConsoleStyle = struct {
 
     fn writeCodeAscii(self: *const Self, code: []const u8) !void {
         try self.f.writer().print("\x1b[{s}m", .{code});
-    }
-
-    fn getCodeAscii(_: *const Self, color: Color) []const u8 {
-        return switch (color) {
-            .red => "31;1",
-            .green => "32;1",
-            .yellow => "33;1",
-            .blue => "34;1",
-            .purple => "35;1",
-        };
     }
 };
