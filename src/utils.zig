@@ -84,34 +84,38 @@ pub const ConsoleStyle = struct {
                 .purple => windows.FOREGROUND_RED | windows.FOREGROUND_BLUE,
             };
 
-            _ = try windows.SetConsoleTextAttribute(self.f.handle, col);
+            try self.setAttrWin(col);
         } else {
-            const code = self.getCode(color);
-            try self.setColorCode(code);
+            const code = self.getCodeAscii(color);
+            try self.writeCodeAscii(code);
         }
-    }
-
-    pub fn setColorCode(self: *const Self, code: []const u8) !void {
-        try self.f.writer().print("\x1b[{s}m", .{code});
     }
 
     pub fn setBold(self: *const Self) !void {
         if (builtin.os.tag == .windows) {
-            try windows.SetConsoleTextAttribute(self.f.handle, windows.FOREGROUND_INTENSITY);
+            try self.setAttrWin(windows.FOREGROUND_INTENSITY);
         } else {
-            try self.setColorCode("1");
+            try self.writeCodeAscii("1");
         }
     }
 
     pub fn reset(self: *const Self) !void {
         if (builtin.os.tag == .windows) {
-            try windows.SetConsoleTextAttribute(self.f.handle, self.attrs);
+            try self.setAttrWin(self.attrs);
         } else {
-            try self.setColorCode("0");
+            try self.writeCodeAscii("0");
         }
     }
 
-    fn getCode(_: *const Self, color: Color) []const u8 {
+    fn setAttrWin(self: *const Self, attr: windows.WORD) !void {
+        try windows.SetConsoleTextAttribute(self.f.handle, attr);
+    }
+
+    fn writeCodeAscii(self: *const Self, code: []const u8) !void {
+        try self.f.writer().print("\x1b[{s}m", .{code});
+    }
+
+    fn getCodeAscii(_: *const Self, color: Color) []const u8 {
         return switch (color) {
             .red => "31;1",
             .green => "32;1",
