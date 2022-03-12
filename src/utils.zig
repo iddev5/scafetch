@@ -42,33 +42,73 @@ pub const Color = enum {
     purple,
 };
 
+const windows = std.os.windows;
+
 pub const ConsoleStyle = struct {
     f: std.fs.File,
+    attrs: AttrType(),
+
+    fn AttrType() type {
+        return switch (builtin.os.tag) {
+            .windows => windows.WORD,
+            else => void,
+        };
+    }
 
     const Self = @This();
     pub fn init(f: std.fs.File) Self {
+        const attrs: AttrType() = blk: {
+            switch (builtin.os.tag) {
+                .windows => {
+                    var info: windows.CONSOLE_SCREEN_BUFFER_INFO = undefined;
+                    _ = windows.kernel32.GetConsoleScreenBufferInfo(f.handle, &info);
+                    _ = windows.kernel32.SetConsoleOutputCP(65001);
+                    break :blk info.wAttributes;
+                },
+                else => break :blk {},
+            }
+        };
         return .{
             .f = f,
+            .attrs = attrs,
         };
     }
 
     pub fn setColor(self: *const Self, color: Color) !void {
-        const code = self.getCode(color);
-        try self.setColorCode(code);
-    }
+        if (builtin.os.tag == .windows) {
+            const col: u16 = switch (color) {
+                .red => windows.FOREGROUND_RED,
+                .green => windows.FOREGROUND_GREEN,
+                .blue => windows.FOREGROUND_BLUE,
+                .yellow => windows.FOREGROUND_RED | windows.FOREGROUND_GREEN,
+                .purple => windows.FOREGROUND_RED | windows.FOREGROUND_BLUE,
+            };
 
-    pub fn setColorCode(self: *const Self, code: []const u8) !void {
-        if (builtin.os.tag == .window) {} else {
-            try self.f.writer().print("\x1b[{s}m", .{code});
+            _ = try windows.SetConsoleTextAttribute(self.f.handle, col);
+        } else {
+            const code = self.getCode(color);
+            try self.setColorCode(code);
         }
     }
 
+    pub fn setColorCode(self: *const Self, code: []const u8) !void {
+        try self.f.writer().print("\x1b[{s}m", .{code});
+    }
+
     pub fn setBold(self: *const Self) !void {
-        try self.setColorCode("1");
+        if (builtin.os.tag == .windows) {
+            try windows.SetConsoleTextAttribute(self.f.handle, windows.FOREGROUND_INTENSITY);
+        } else {
+            try self.setColorCode("1");
+        }
     }
 
     pub fn reset(self: *const Self) !void {
-        try self.setColorCode("0");
+        if (builtin.os.tag == .windows) {
+            try windows.SetConsoleTextAttribute(self.f.handle, self.attrs);
+        } else {
+            try self.setColorCode("0");
+        }
     }
 
     fn getCode(_: *const Self, color: Color) []const u8 {
