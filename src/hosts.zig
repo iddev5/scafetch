@@ -14,7 +14,7 @@ pub const Host = enum {
     const hosts_map = std.ComptimeStringMap(Host, .{
         .{ "github.com", .github },
         .{ "gitlab.com", .gitlab },
-        .{ "codeberg.com", .codeberg },
+        .{ "codeberg.org", .codeberg },
         .{ "github", .github },
         .{ "gitlab", .gitlab },
         .{ "codeberg", .codeberg },
