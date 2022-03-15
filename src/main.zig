@@ -82,5 +82,5 @@ pub fn main() anyerror!void {
 
     try info.print(stdout_file);
 
-    std.log.info("All your get requests are belong to us.", .{});
+    std.log.info("All your repo stats are belong to us.", .{});
 }

@@ -132,8 +132,6 @@ const Gitea = struct {
             allocator.free(self.full_name);
             allocator.free(self.description);
             allocator.free(self.html_url);
-            // allocator.free(self.language);
-            // allocator.free(self.license.name);
             allocator.free(self.created_at);
             allocator.free(self.updated_at);
             allocator.free(self.default_branch);
@@ -163,12 +161,12 @@ const Gitea = struct {
             .is_template = query.template,
             .description = try allocator.dupe(u8, query.description),
             .repository = try allocator.dupe(u8, query.html_url),
-            .language = try allocator.dupe(u8, ""),
+            .language = "",
             .size = query.size,
             .stars = query.stars_count,
             .watches = query.watchers_count,
             .forks = query.forks_count,
-            .license = try allocator.dupe(u8, ""),
+            .license = "",
             .created = try allocator.dupe(u8, query.created_at[0..10]),
             .modified = try allocator.dupe(u8, query.updated_at[0..10]),
             .branch = try allocator.dupe(u8, query.default_branch),
@@ -222,7 +220,7 @@ const Gitlab = struct {
             .is_template = false,
             .description = try allocator.dupe(u8, query.description),
             .repository = try allocator.dupe(u8, query.web_url),
-            .language = try allocator.dupe(u8, ""),
+            .language = "",
             .size = 0,
             .stars = query.star_count,
             .watches = 0,
