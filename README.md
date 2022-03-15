@@ -4,6 +4,8 @@ Scafetch is a command-line tool to display information about your remote Git rep
 It currently supports fetching repository information from Github, Gitlab and Codeberg (Gitea).
 
 # Usage
+You only need Zig master and Gyro master to compile. All other dependencies are fetched by Gyro.
+
 Use gyro to build:
 ```
 gyro build -Drelease-safe
@@ -23,6 +25,12 @@ Host name | #1                     | #2                           | #3
 Github    | ``gh/<author>/<repo>`` | ``github/<author>/<repo>``   | ``github.com/<author>/<repo>``
 Gitlab    | ``gl/<author>/<repo>`` | ``gitlab/<author>/<repo>``   | ``githlab.com/<author>/<repo>``
 Codeberg  | ``cb/<author>/<repo>`` | ``codeberg/<author>/<repo>`` | ``codeberg.org/<author>/<repo>``
+
+# Todo
+- Zigmod support
+- More CLI flags, like opt out of coloring, what info to display etc.
+- Authentication support
+- Show an ASCII art of the primary language(?) of the repository
 
 # License
 scafetch is licensed under [MIT License](LICENSE)
