@@ -18,7 +18,7 @@ GYRO_VER="0.5.0"
 GYRO="gyro-$GYRO_VER-linux-x86_64"
 wget -nv "http://github.com/mattnite/gyro/releases/download/$GYRO_VER/$GYRO.tar.gz"
 tar xf "$GYRO.tar.gz"
-export PATH="$(pwd)/$GYRO:$PATH"
+export PATH="$(pwd)/$GYRO/bin:$PATH"
 
 # Main
 gyro fetch
