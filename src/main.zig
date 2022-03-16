@@ -39,6 +39,12 @@ pub fn main() anyerror!void {
         .{ .long = "version", .short = "v" },
         .{ .long = "help", .short = "h" },
     };
+
+    if (args.len < 2) {
+        try printHelp(stdout);
+        std.process.exit(0);
+    }
+
     var ap = AyArgparse.init(allocator, params[0..]);
     defer ap.deinit();
     try ap.parse(args[1..]);
