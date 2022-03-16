@@ -51,24 +51,24 @@ const Github = struct {
         fork: bool,
         archived: bool,
         is_template: bool,
-        description: []const u8,
+        description: ?[]const u8,
         html_url: []const u8,
-        language: []const u8,
+        language: ?[]const u8,
         size: u32,
         stargazers_count: u32,
         watchers_count: u32,
         forks_count: u32,
-        license: struct { name: []const u8 },
+        license: ?struct { name: []const u8 },
         created_at: []const u8,
         updated_at: []const u8,
         default_branch: []const u8,
 
         pub fn free(self: *@This(), allocator: Allocator) void {
             allocator.free(self.full_name);
-            allocator.free(self.description);
+            if (self.description) |d| allocator.free(d);
             allocator.free(self.html_url);
-            allocator.free(self.language);
-            allocator.free(self.license.name);
+            if (self.language) |l| allocator.free(l);
+            if (self.license) |l| allocator.free(l.name);
             allocator.free(self.created_at);
             allocator.free(self.updated_at);
             allocator.free(self.default_branch);
@@ -96,14 +96,14 @@ const Github = struct {
             .is_fork = query.fork,
             .is_archived = query.archived,
             .is_template = query.is_template,
-            .description = try allocator.dupe(u8, query.description),
+            .description = if (query.description) |d| try allocator.dupe(u8, d) else "",
             .repository = try allocator.dupe(u8, query.html_url),
-            .language = try allocator.dupe(u8, query.language),
+            .language = if (query.language) |l| try allocator.dupe(u8, l) else "",
             .size = query.size,
             .stars = query.stargazers_count,
             .watches = query.watchers_count,
             .forks = query.forks_count,
-            .license = try allocator.dupe(u8, query.license.name),
+            .license = if (query.license) |l| try allocator.dupe(u8, l.name) else "",
             .created = try allocator.dupe(u8, query.created_at[0..10]),
             .modified = try allocator.dupe(u8, query.updated_at[0..10]),
             .branch = try allocator.dupe(u8, query.default_branch),
@@ -178,7 +178,7 @@ const Gitlab = struct {
     const Query = struct {
         path_with_namespace: []const u8,
         description: []const u8,
-        license: struct { nickname: []const u8 },
+        license: ?struct { nickname: []const u8 },
         web_url: []const u8,
         star_count: u32,
         forks_count: u32,
@@ -190,7 +190,7 @@ const Gitlab = struct {
             allocator.free(self.path_with_namespace);
             allocator.free(self.description);
             allocator.free(self.web_url);
-            allocator.free(self.license.nickname);
+            if (self.license) |l| allocator.free(l.nickname);
             allocator.free(self.created_at);
             allocator.free(self.last_activity_at);
             allocator.free(self.default_branch);
@@ -225,7 +225,7 @@ const Gitlab = struct {
             .stars = query.star_count,
             .watches = 0,
             .forks = query.forks_count,
-            .license = try allocator.dupe(u8, query.license.nickname),
+            .license = if (query.license) |l| try allocator.dupe(u8, l.nickname) else "",
             .created = try allocator.dupe(u8, query.created_at[0..10]),
             .modified = try allocator.dupe(u8, query.last_activity_at[0..10]),
             .branch = try allocator.dupe(u8, query.default_branch),
