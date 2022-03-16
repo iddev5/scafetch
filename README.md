@@ -1,4 +1,8 @@
 # scafetch
+[![CI](https://github.com/iddev5/scafetch/actions/workflows/ci.yml/badge.svg)](https://github.com/iddev5/scafetch/actions)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+[![zig](https://img.shields.io/badge/zig-master-orange.svg)](https://ziglang.org)
+
 Scafetch is a command-line tool to display information about your remote Git repositories in an aesthetic and visually pleasing way.
 
 It currently supports fetching repository information from Github, Gitlab and Codeberg (Gitea).
