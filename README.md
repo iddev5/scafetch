@@ -8,8 +8,11 @@ Scafetch is a command-line tool to display information about your remote Git rep
 It currently supports fetching repository information from Github, Gitlab and Codeberg (Gitea).
 
 # Installation
+## Releases
+You can get the latest stable [release](https://github.com/iddev5/scafetch/releases) from Github.
+
 ## Arch Linux (AUR)
-Install the [scafetch](https://aur.archlinux.org/packages/scafetch) package.
+Install the community maintained [scafetch](https://aur.archlinux.org/packages/scafetch) package.
 
 # Usage
 You only need Zig master and Gyro master to compile. All other dependencies are fetched by Gyro.
