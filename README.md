@@ -31,7 +31,7 @@ It is also possible to explicitly state the host service name
 Host name | 1                      | 2                            | 3
 ----------|------------------------|------------------------------|---------------------------------
 Github    | ``gh/<author>/<repo>`` | ``github/<author>/<repo>``   | ``github.com/<author>/<repo>``
-Gitlab    | ``gl/<author>/<repo>`` | ``gitlab/<author>/<repo>``   | ``githlab.com/<author>/<repo>``
+Gitlab    | ``gl/<author>/<repo>`` | ``gitlab/<author>/<repo>``   | ``gitlab.com/<author>/<repo>``
 Codeberg  | ``cb/<author>/<repo>`` | ``codeberg/<author>/<repo>`` | ``codeberg.org/<author>/<repo>``
 
 # Todo
