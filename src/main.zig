@@ -6,7 +6,7 @@ const Host = @import("hosts.zig").Host;
 const AyArgparse = @import("ay-arg");
 
 pub fn printVersion(writer: anytype) !void {
-    try writer.writeAll("scafetch v0.1\n");
+    try writer.writeAll("scafetch v0.2\n");
 }
 
 pub fn printHelp(writer: anytype) !void {
@@ -15,7 +15,7 @@ pub fn printHelp(writer: anytype) !void {
         \\usage: scafetch <author>/<repository>
         \\
         \\  -o, --host <host>       Select the host server, accepted values are
-        \\                           github (default), gitlab and codeberg
+        \\                          github (default), gitlab and codeberg
         \\  -h, --help              Show this help message
         \\  -v, --version           Show the app version
         \\
