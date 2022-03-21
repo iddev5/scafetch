@@ -7,6 +7,8 @@ Scafetch is a command-line tool to display information about your remote Git rep
 
 It currently supports fetching repository information from Github, Gitlab and Codeberg (Gitea).
 
+![](.data/scafetch.png)
+
 # Installation
 ## Releases
 You can get the latest stable [release](https://github.com/iddev5/scafetch/releases) from Github.
