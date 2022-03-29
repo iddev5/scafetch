@@ -13,9 +13,16 @@ pub fn requestGet(allocator: Allocator, url: []const u8) ![]const u8 {
     defer req.deinit();
 
     try req.do(.GET, headers, null);
-    if (req.status.code != 200) {
-        std.log.err("request return status code: {}: {s}\n", .{ req.status.code, req.status.reason });
-        std.process.exit(1);
+    switch (req.status.code) {
+        200 => {},
+        404 => {
+            std.log.err("requested project repository not found\n", .{});
+            std.process.exit(1);
+        },
+        else => {
+            std.log.err("request return status code: {}: {s}\n", .{ req.status.code, req.status.reason });
+            std.process.exit(1);
+        },
     }
 
     const reader = req.reader();
