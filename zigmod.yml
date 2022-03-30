@@ -1,0 +1,5 @@
+id: hnjdgzdi5fgqxz3c9374igqivvttkt387jv853l09xdl66jx
+name: scafetch
+license: MIT
+description: a command-line tool to display information about remote git repositories
+root_dependencies:

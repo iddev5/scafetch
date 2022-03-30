@@ -40,7 +40,6 @@ Gitlab    | ``gl/<author>/<repo>`` | ``gitlab/<author>/<repo>``   | ``gitlab.com
 Codeberg  | ``cb/<author>/<repo>`` | ``codeberg/<author>/<repo>`` | ``codeberg.org/<author>/<repo>``
 
 # Todo
-- Zigmod support
 - More CLI flags, like opt out of coloring, what info to display etc.
 - Authentication support
 - Show an ASCII art of the primary language(?) of the repository
