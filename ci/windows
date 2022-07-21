@@ -12,7 +12,7 @@ curl -L "https://ziglang.org/builds/$ZIG.zip" -o "$ZIG.zip"
 export PATH="$(pwd)/$ZIG:$PATH"
 
 # Gyro does not need to be updated much often
-GYRO_VER="0.5.0"
+GYRO_VER="0.7.0"
 GYRO="gyro-$GYRO_VER-windows-x86_64"
 curl -L "http://github.com/mattnite/gyro/releases/download/$GYRO_VER/$GYRO.zip" -o "$GYRO.zip"
 7z x "$GYRO.zip"
