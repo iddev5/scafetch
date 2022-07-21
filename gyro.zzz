@@ -7,5 +7,5 @@ deps:
   ay-arg:
     git:
       url: "https://github.com/iddev5/ay-arg.git"
-      ref: 4ddc62e8723c3b23eccd41e23067840ce7cbddfd
-      root: AyArgparse.zig
+      ref: master
+      root: main.zig

@@ -3,7 +3,7 @@ const json = std.json;
 const mem = std.mem;
 const zfetch = @import("zfetch");
 const Host = @import("hosts.zig").Host;
-const AyArgparse = @import("ay-arg");
+const Argparse = @import("ay-arg");
 
 pub fn printVersion(writer: anytype) !void {
     try writer.writeAll("scafetch v0.2\n");
@@ -34,10 +34,10 @@ pub fn main() anyerror!void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    const params = &[_]AyArgparse.ParamDesc{
-        .{ .long = "host", .short = "o", .need_value = true },
-        .{ .long = "version", .short = "v" },
-        .{ .long = "help", .short = "h" },
+    const params = &[_]Argparse.ParamDesc{
+        .{ .long = "host", .short = 'o', .need_value = true },
+        .{ .long = "version", .short = 'v' },
+        .{ .long = "help", .short = 'h' },
     };
 
     if (args.len < 2) {
@@ -45,7 +45,7 @@ pub fn main() anyerror!void {
         std.process.exit(0);
     }
 
-    var ap = AyArgparse.init(allocator, params[0..]);
+    var ap = Argparse.init(allocator, params[0..]);
     defer ap.deinit();
     try ap.parse(args[1..]);
 
