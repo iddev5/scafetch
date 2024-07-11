@@ -17,11 +17,11 @@ You can get the latest stable [release](https://github.com/iddev5/scafetch/relea
 Install the community maintained [scafetch](https://aur.archlinux.org/packages/scafetch) package.
 
 # Usage
-You only need Zig master and Gyro master to compile. All other dependencies are fetched by Gyro.
+You only need Zig master to compile.
 
-Use gyro to build:
+Use zig to build:
 ```
-gyro build -Drelease-safe
+zig build -Doptimize=ReleaseSafe
 ```
 (You can optionally install it in a system or user wide directory for easier access, use the ``-p <prefix>`` flag for convenience)
 
@@ -31,7 +31,9 @@ Then, run the application:
 ```
 where ``ziglang/zig`` is taken as an example repository address, and the host defaults to Github
 
-It is also possible to explicitly state the host service name
+It is also possible to explicitly state the host service name using ``-o <hostname>`` flag. See ``--help`` for more information.  
+
+Scafetch can additionally infer the host service from hints present in the given URL:
 
 Host name | 1                      | 2                            | 3
 ----------|------------------------|------------------------------|---------------------------------
@@ -40,7 +42,6 @@ Gitlab    | ``gl/<author>/<repo>`` | ``gitlab/<author>/<repo>``   | ``gitlab.com
 Codeberg  | ``cb/<author>/<repo>`` | ``codeberg/<author>/<repo>`` | ``codeberg.org/<author>/<repo>``
 
 # Todo
-- Zigmod support
 - More CLI flags, like opt out of coloring, what info to display etc.
 - Authentication support
 - Show an ASCII art of the primary language(?) of the repository
