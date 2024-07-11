@@ -5,22 +5,14 @@ set -e
 
 sudo apt-get install tar wget jq
 
-# Always use zig master
-wget -nv http://ziglang.org/download/index.json
-ZIG="zig-linux-x86_64-$(cat index.json | jq -r .master.version)"
+# Stick to stable release
+VERSION="0.13.0"
+ZIG="zig-linux-x86_64-$VERSION"
 
 wget -nv "https://ziglang.org/builds/$ZIG.tar.xz"
 tar xf "$ZIG.tar.xz"
 export PATH="$(pwd)/$ZIG:$PATH"
 
-# Gyro does not need to be updated much often
-GYRO_VER="0.7.0"
-GYRO="gyro-$GYRO_VER-linux-x86_64"
-wget -nv "http://github.com/mattnite/gyro/releases/download/$GYRO_VER/$GYRO.tar.gz"
-tar xf "$GYRO.tar.gz"
-export PATH="$(pwd)/$GYRO/bin:$PATH"
-
 # Main
-gyro fetch
 zig build
 
