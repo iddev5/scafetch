@@ -1,6 +1,6 @@
 .{
 	.name = "scafetch",
-	.version = "0.2.0",
+	.version = "0.1.2",
 	.dependencies = .{
 		.@"ay-arg" = .{
 			.url = "https://github.com/iddev5/ay-arg/archive/80c1df8b85214bd8d3bd61458cd9e6533880dc1f.tar.gz",

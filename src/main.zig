@@ -5,7 +5,7 @@ const Host = @import("hosts.zig").Host;
 const Argparse = @import("ay-arg");
 
 pub fn printVersion(writer: anytype) !void {
-    try writer.writeAll("scafetch v0.2\n");
+    try writer.writeAll("scafetch v0.1.2\n");
 }
 
 pub fn printHelp(writer: anytype) !void {
