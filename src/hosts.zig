@@ -11,7 +11,7 @@ pub const Host = enum {
     codeberg,
     default,
 
-    const hosts_map = std.ComptimeStringMap(Host, .{
+    const hosts_map = std.StaticStringMap(Host).initComptime(.{
         .{ "github.com", .github },
         .{ "gitlab.com", .gitlab },
         .{ "codeberg.org", .codeberg },
@@ -78,18 +78,13 @@ const Github = struct {
     pub fn request(allocator: Allocator, url: []const u8) !Info {
         const source = try utils.requestGet(allocator, url);
         defer allocator.free(source);
-        var query = blk: {
-            @setEvalBranchQuota(6000);
-            var tokens = json.TokenStream.init(source);
-            var query = try json.parse(Query, &tokens, .{
-                .allocator = allocator,
-                .ignore_unknown_fields = true,
-            });
-            errdefer query.free(allocator);
-            break :blk query;
-        };
-        defer query.free(allocator);
 
+        var parsed = try json.parseFromSlice(Query, allocator, source, .{
+            .ignore_unknown_fields = true,
+        });
+        defer parsed.deinit();
+
+        const query = parsed.value;
         return Info{
             .name = try allocator.dupe(u8, query.full_name),
             .is_private = query.private,
@@ -141,18 +136,13 @@ const Gitea = struct {
     pub fn request(allocator: Allocator, url: []const u8) !Info {
         const source = try utils.requestGet(allocator, url);
         defer allocator.free(source);
-        var query = blk: {
-            @setEvalBranchQuota(6000);
-            var tokens = json.TokenStream.init(source);
-            var query = try json.parse(Query, &tokens, .{
-                .allocator = allocator,
-                .ignore_unknown_fields = true,
-            });
-            errdefer query.free(allocator);
-            break :blk query;
-        };
-        defer query.free(allocator);
 
+        var parsed = try json.parseFromSlice(Query, allocator, source, .{
+            .ignore_unknown_fields = true,
+        });
+        defer parsed.deinit();
+
+        const query = parsed.value;
         return Info{
             .name = try allocator.dupe(u8, query.full_name),
             .is_private = query.private,
@@ -178,7 +168,7 @@ const Gitlab = struct {
     const Query = struct {
         path_with_namespace: []const u8,
         description: []const u8,
-        license: ?struct { nickname: []const u8 },
+        license: ?struct { name: []const u8 },
         web_url: []const u8,
         star_count: u32,
         forks_count: u32,
@@ -200,18 +190,13 @@ const Gitlab = struct {
     pub fn request(allocator: Allocator, url: []const u8) !Info {
         const source = try utils.requestGet(allocator, url);
         defer allocator.free(source);
-        var query = blk: {
-            @setEvalBranchQuota(6000);
-            var tokens = json.TokenStream.init(source);
-            var query = try json.parse(Query, &tokens, .{
-                .allocator = allocator,
-                .ignore_unknown_fields = true,
-            });
-            errdefer query.free(allocator);
-            break :blk query;
-        };
-        defer query.free(allocator);
 
+        var parsed = try json.parseFromSlice(Query, allocator, source, .{
+            .ignore_unknown_fields = true,
+        });
+        defer parsed.deinit();
+
+        const query = parsed.value;
         return Info{
             .name = try allocator.dupe(u8, query.path_with_namespace),
             .is_private = false,
@@ -225,7 +210,7 @@ const Gitlab = struct {
             .stars = query.star_count,
             .watches = 0,
             .forks = query.forks_count,
-            .license = if (query.license) |l| try allocator.dupe(u8, l.nickname) else "",
+            .license = if (query.license) |l| try allocator.dupe(u8, l.name) else "",
             .created = try allocator.dupe(u8, query.created_at[0..10]),
             .modified = try allocator.dupe(u8, query.last_activity_at[0..10]),
             .branch = try allocator.dupe(u8, query.default_branch),

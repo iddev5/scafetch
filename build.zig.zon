@@ -1,0 +1,17 @@
+.{
+	.name = "scafetch",
+	.version = "0.2.0",
+	.dependencies = .{
+		.@"ay-arg" = .{
+			.url = "https://github.com/iddev5/ay-arg/archive/80c1df8b85214bd8d3bd61458cd9e6533880dc1f.tar.gz",
+			.hash = "1220f6bf8688b796e101d40594ad2087f38fed3b0a213e5ddc6613d2b1b289ffa82d",
+		}
+	},
+	.paths = .{
+		"build.zig",
+		"build.zig.zon",
+		"src",
+		"LICENSE",
+		"README.md",
+	},
+}

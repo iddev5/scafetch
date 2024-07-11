@@ -1,44 +1,27 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const builtin = @import("builtin");
-const zfetch = @import("zfetch");
 
 pub fn requestGet(allocator: Allocator, url: []const u8) ![]const u8 {
-    var headers = zfetch.Headers.init(allocator);
-    defer headers.deinit();
+    const uri = try std.Uri.parse(url);
 
-    try headers.appendValue("Accept", "application/json");
+    var client = std.http.Client{ .allocator = allocator };
+    defer client.deinit();
 
-    var req = try zfetch.Request.init(allocator, url, null);
+    var header_buf: [4096]u8 = undefined;
+
+    var req = try client.open(.GET, uri, .{ .server_header_buffer = &header_buf });
     defer req.deinit();
 
-    try req.do(.GET, headers, null);
-    switch (req.status.code) {
-        200 => {},
-        404 => {
-            std.log.err("requested project repository not found\n", .{});
-            std.process.exit(1);
-        },
-        else => {
-            std.log.err("request return status code: {}: {s}\n", .{ req.status.code, req.status.reason });
-            std.process.exit(1);
-        },
-    }
+    try req.send();
+    try req.finish();
+    try req.wait();
 
     const reader = req.reader();
+    const body = try reader.readAllAlloc(allocator, std.math.maxInt(usize));
+    errdefer allocator.free(body);
 
-    var buf: [1024]u8 = undefined;
-    var source = std.ArrayList(u8).init(allocator);
-    defer source.deinit();
-
-    while (true) {
-        const read = try reader.read(&buf);
-        if (read == 0) break;
-
-        try source.appendSlice(buf[0..read]);
-    }
-
-    return source.toOwnedSlice();
+    return body;
 }
 
 pub const Color = enum {

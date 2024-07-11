@@ -33,8 +33,9 @@ pub fn free(self: *Info, allocator: Allocator) void {
 }
 
 pub fn print(info: *Info, file: std.fs.File) !void {
-    const rand_engine = std.rand.DefaultPrng.init(@intCast(u64, std.time.milliTimestamp())).random();
-    const choice = rand_engine.enumValue(utils.Color);
+    var rand_engine = std.rand.DefaultPrng.init(@as(u64, @intCast(std.time.milliTimestamp())));
+    const random = rand_engine.random();
+    const choice = random.enumValue(utils.Color);
 
     const writer = file.writer();
     const color = ConsoleStyle.init(file);
@@ -96,7 +97,7 @@ pub fn print(info: *Info, file: std.fs.File) !void {
         const field = info_fields[field_id];
 
         const data = @field(info, field.name);
-        if (field.field_type == []const u8) {
+        if (field.type == []const u8) {
             if (!std.mem.eql(u8, data, "")) {
                 try writer.writeByte('-');
 

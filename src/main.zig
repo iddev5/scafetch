@@ -1,7 +1,6 @@
 const std = @import("std");
 const json = std.json;
 const mem = std.mem;
-const zfetch = @import("zfetch");
 const Host = @import("hosts.zig").Host;
 const Argparse = @import("ay-arg");
 
@@ -58,9 +57,6 @@ pub fn main() anyerror!void {
         try printHelp(stdout);
         std.process.exit(0);
     }
-
-    try zfetch.init();
-    defer zfetch.deinit();
 
     const project = ap.positionals.items[0];
     var host_tag: Host = if (ap.arguments.get("host")) |h| std.meta.stringToEnum(Host, h) orelse {
